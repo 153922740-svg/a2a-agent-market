@@ -145,7 +145,7 @@ class AgentMarketClient:
     def get_conversation(self, conv_uid) -> dict:
         return self._request("GET", f"/v1/conversations/{conv_uid}", auth=True)
 
-    # ---- 经验广场（认证企业发布，任意人浏览） ----
+    # ---- 经验广场（认证企业发布；搜索/浏览需已发布过≥1条经验——先发布才能共享） ----
     def publish_experience(self, industry, topic, problem, root_cause, solution, tags="") -> dict:
         """发布踩坑经验（仅认证企业）。内容过安全网关。"""
         return self._request("POST", "/v1/experiences", {
@@ -154,20 +154,20 @@ class AgentMarketClient:
         }, auth=True)
 
     def list_experiences(self, industry=None, topic=None, keyword=None, limit=50) -> list:
-        """浏览/检索经验（公开，按点赞+最新）。"""
+        """浏览/检索经验（需已发布过≥1条经验解锁；未发布会得到 403 提示先发布）。"""
         from urllib.parse import urlencode
         params = {}
         if industry: params["industry"] = industry
         if topic: params["topic"] = topic
         if keyword: params["keyword"] = keyword
         params["limit"] = limit
-        return self._request("GET", "/v1/experiences?" + urlencode(params))
+        return self._request("GET", "/v1/experiences?" + urlencode(params), auth=True)
 
     def get_experience(self, exp_id) -> dict:
-        return self._request("GET", f"/v1/experiences/{exp_id}")
+        return self._request("GET", f"/v1/experiences/{exp_id}", auth=True)
 
     def helpful(self, exp_id) -> dict:
-        return self._request("POST", f"/v1/experiences/{exp_id}/helpful")
+        return self._request("POST", f"/v1/experiences/{exp_id}/helpful", auth=True)
 
 
 if __name__ == "__main__":
